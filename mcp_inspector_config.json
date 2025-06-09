@@ -1,0 +1,15 @@
+{
+  "mcpServers": {
+    "stock-price-server": {
+      "command": "/Users/jacobtuchinsky/anaconda3/bin/python",
+      "args": ["/Users/jacobtuchinsky/PycharmProjects/MCP/src/servers/stock_price_server.py"],
+      "env": {
+        "PYTHONPATH": "/Users/jacobtuchinsky/PycharmProjects/MCP"
+      }
+    },
+    "test-server": {
+      "command": "/Users/jacobtuchinsky/anaconda3/bin/python",
+      "args": ["/Users/jacobtuchinsky/PycharmProjects/MCP/test_server.py"]
+    }
+  }
+}
