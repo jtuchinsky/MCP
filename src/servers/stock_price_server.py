@@ -1,8 +1,34 @@
 from mcp.server.fastmcp import FastMCP
 import yfinance as yf
+import time
+from typing import Dict, Tuple, Optional
 
 # Create an MCP server with a custom name
 mcp = FastMCP("Stock Price Server")
+
+CACHE_TTL_SECONDS = 60  # Cache stock prices for 60 seconds
+_price_cache: Dict[str, Tuple[float, float]] = {}  # symbol -> (price, timestamp)
+
+
+def _get_cached_price(symbol: str) -> Optional[float]:
+    """Get cached price if valid, otherwise return None."""
+    if symbol in _price_cache:
+        price, timestamp = _price_cache[symbol]
+        if time.time() - timestamp < CACHE_TTL_SECONDS:
+            return price
+        else:
+            del _price_cache[symbol]
+    return None
+
+
+def _cache_price(symbol: str, price: float) -> None:
+    """Cache a stock price with current timestamp."""
+    _price_cache[symbol] = (price, time.time())
+
+
+def _clear_cache() -> None:
+    """Clear all cached prices. Useful for testing."""
+    _price_cache.clear()
 
 
 @mcp.tool()
@@ -11,6 +37,10 @@ def get_stock_price(symbol: str) -> float:
     Retrieve the current stock price for the given ticker symbol.
     Returns the latest closing price as a float.
     """
+    cached_price = _get_cached_price(symbol)
+    if cached_price is not None:
+        return cached_price
+    
     try:
         ticker = yf.Ticker(symbol)
         # Get today's historical data; may return empty if market is closed or symbol is invalid.
@@ -18,13 +48,17 @@ def get_stock_price(symbol: str) -> float:
         if not data.empty:
             # Use the last closing price from today's data
             price = data['Close'].iloc[-1]
-            return float(price)
+            price_float = float(price)
+            _cache_price(symbol, price_float)
+            return price_float
         else:
             # As a fallback, try using the regular market price from the ticker info
             info = ticker.info
             price = info.get("regularMarketPrice", None)
             if price is not None:
-                return float(price)
+                price_float = float(price)
+                _cache_price(symbol, price_float)
+                return price_float
             else:
                 return -1.0  # Indicate failure
     except Exception:
