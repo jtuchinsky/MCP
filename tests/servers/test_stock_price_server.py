@@ -1,10 +1,14 @@
 import pytest
 from unittest.mock import Mock, patch, MagicMock
 import pandas as pd
-from src.servers.stock_price_server import get_stock_price, stock_resource, get_stock_history, compare_stocks
+from src.servers.stock_price_server import get_stock_price, stock_resource, get_stock_history, compare_stocks, _clear_cache
 
 
 class TestGetStockPrice:
+    
+    def setup_method(self):
+        """Clear cache before each test to ensure isolation."""
+        _clear_cache()
     
     @patch('src.servers.stock_price_server.yf.Ticker')
     def test_get_stock_price_success_with_history(self, mock_ticker):
@@ -59,6 +63,10 @@ class TestGetStockPrice:
 
 class TestStockResource:
     
+    def setup_method(self):
+        """Clear cache before each test to ensure isolation."""
+        _clear_cache()
+    
     @patch('src.servers.stock_price_server.get_stock_price')
     def test_stock_resource_success(self, mock_get_price):
         mock_get_price.return_value = 150.75
@@ -79,6 +87,10 @@ class TestStockResource:
 
 
 class TestGetStockHistory:
+    
+    def setup_method(self):
+        """Clear cache before each test to ensure isolation."""
+        _clear_cache()
     
     @patch('src.servers.stock_price_server.yf.Ticker')
     def test_get_stock_history_success(self, mock_ticker):
@@ -143,6 +155,10 @@ class TestGetStockHistory:
 
 
 class TestCompareStocks:
+    
+    def setup_method(self):
+        """Clear cache before each test to ensure isolation."""
+        _clear_cache()
     
     @patch('src.servers.stock_price_server.get_stock_price')
     def test_compare_stocks_first_higher(self, mock_get_price):
